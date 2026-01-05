@@ -1,0 +1,29 @@
+1.了解终端基本操作
+2.linux系统内部命令和外部命令
+3.标准输入、标准输出、标准错误
+4.管道与重定向：知道这些符号的作用
+	cat 1.txt|grep abc（管道）、ls>2.txt(输出重定向）、cat<1.txt(重定向）、sleep 10&(后台运行）
+5.实现终端的一些小细节：光标、键盘、ctrl+C不能结束
+6.了解string类的使用（拼接、截取substr、查找find、去除空格）要求能把用户输入的命令行(cat<1.txt|grep abc)分割成单个部分
+7.了解vector动态数组，常用push_back添加元素，size(获取长度）、swap(替换内容），不用担心内存泄漏，不用手动malloc/free
+8.系统调用需要字符串转换string转char*:c_str(),头文件#include <cstring>、#include <cstdlib>
+9.API
+10.进程相关API
+	fork()创建子进程（父进程复制出一个子进程，后续命令在子进程中执行
+	注意：用返回值来区分父/子进程，返回0是子进程，返回正数是父进程的子进程PID，返回-1失败）
+	execvp()替换子进程程序（加载并执行外部命令，如ls、grep)
+	关键：需要传入char*数组，且数组末尾必须是nullptr
+	waitpid()：父进程等待子进程结束（前台运行时用，后台运行时不用）
+
+11.管道相关API
+	pipe()创建匿名管道（实现|功能），返回一对文件描述符（读端fd[0]、写端fd[1])
+	核心：前一个命令的输出写入管道写端，后一个命令从管道读端读取
+12.文件操作与重定向API
+	open()打开文件（指定读写模式、权限，获取文件描述符）
+	dup2()重定向核心
+	close()关闭文件描述符，避免资源泄漏
+	chdir()切换工作目录，实现cd命令的核心
+	getcwd()获取当前工作目录，用于更新pwd
+13.信号相关API
+signal()注册信号处理函数，实现屏蔽ctrl+c，即SIGINT信号
+signal(SIGINT,SIG_IGN)忽略ctrl+c，signal(SIGCHLD,SIG_IGN)自动回收僵尸进程
