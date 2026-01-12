@@ -208,7 +208,6 @@ int main() {
     string cmd;
     char buf[1024];
     cwd = prev_cwd = getcwd(buf, sizeof(buf));
-    string prompt = "";
     while (true) {
         char* input = readline(show_prompt().c_str());
         if (input == nullptr) {
