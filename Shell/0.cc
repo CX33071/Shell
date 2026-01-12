@@ -21,15 +21,15 @@ using namespace std;
 string cwd, prev_cwd;
 const int MAX_CMD = 100;
 const int MAX_PIPE = 50;
+int pid_id = 1;
 void clean_space(string& s) {
     int start = s.find_first_not_of(" ");
     int end = s.find_last_not_of(" ");
-    if (start == -1){
+    if (start == -1) {
         s = "";
-    }
-    else{
+    } else {
         s = s.substr(start, end - start + 1);
-}
+    }
 }
 vector<string> split_str(const string& s, char zhiding) {
     vector<string> res;
@@ -111,7 +111,7 @@ void do_redirect(const string& infile,
             dup2(fd, STDIN_FILENO);
             close(fd);
         } else {
-            cout << RED << "重定向错误" << infile << " 不存在" << RESET<< endl;
+            cout << RED << "重定向错误" << infile << " 不存在" << RESET << endl;
             exit(1);
         }
     }
@@ -147,10 +147,10 @@ void do_cd(const string& cmd) {
     prev_cwd = cwd;
     cwd = getcwd(buf, sizeof(buf));
 }
-void run_command(const vector<string>& cmds, bool bg) {
+void run_command(const vector<string>& cmds, bool bg, string cmd2) {
     int pipefd[MAX_PIPE][2];
     int n = cmds.size();
-    if(n==0){
+    if (n == 0) {
         return;
     }
     pid_t pid[MAX_CMD];
@@ -189,15 +189,20 @@ void run_command(const vector<string>& cmds, bool bg) {
         for (int i = 0; i < n; i++)
             waitpid(pid[i], nullptr, 0);
     } else {
-        usleep(10000); 
+       pid_t PID = pid[0];
+       cout << "[" << pid_id << "]+" << "   " << PID << endl;
+       usleep(10000);
+       cout << "[" << pid_id << "]+" << "   " << PID << "  done         "
+            << cmd2 << endl;
+       pid_id++;
     }
 }
 string lscolor(const string& cmd) {
-    string new_cmd = cmd;  
+    string new_cmd = cmd;
     size_t lspos = new_cmd.find("ls");
     if (lspos != string::npos && (lspos == 0 || new_cmd[lspos - 1] == ' ') &&
         (lspos + 2 >= new_cmd.size() || new_cmd[lspos + 2] == ' '))
-        new_cmd.insert(lspos + 2, " --color=always");
+        new_cmd.insert(lspos + 2, " --color=tty");
     return new_cmd;
 }
 int main() {
@@ -213,11 +218,11 @@ int main() {
         if (input == nullptr) {
             cout << endl;
             break;
-        }  
+        }
         cmd = input;
-        free(input); 
+        free(input);
         clean_space(cmd);
-        if (cmd.empty()){
+        if (cmd.empty()) {
             continue;
         }
         add_history(cmd.c_str());
@@ -235,9 +240,9 @@ int main() {
             do_cd(cmd);
             continue;
         }
-        string cmd2=lscolor(cmd);
+        string cmd2 = lscolor(cmd);
         vector<string> pipe_cmds = split_str(cmd2, '|');
-        run_command(pipe_cmds, bg_run);
+        run_command(pipe_cmds, bg_run, cmd2);
     }
     return 0;
 }
