@@ -18,6 +18,8 @@ using namespace std;
 #define RESET "\033[0m"
 #define UP "\033[A"
 #define DOWN "\033[B"
+int bg_count = 1;
+vector<int> bg_ing;
 string cwd, prev_cwd;
 const int MAX_CMD = 100;
 const int MAX_PIPE = 50;
@@ -185,16 +187,27 @@ void run_command(const vector<string>& cmds, bool bg, string cmd2) {
         close(pipefd[i][0]);
         close(pipefd[i][1]);
     }
+
     if (!bg) {
-        for (int i = 0; i < n; i++)
+        for (int i = 0; i < n; i++) {
             waitpid(pid[i], nullptr, 0);
+        }
     } else {
-       pid_t PID = pid[0];
-       cout << "[" << pid_id << "]+" << "   " << PID << endl;
-       usleep(10000);
-       cout << "[" << pid_id << "]+" << "   " << PID << "  done         "
-            << cmd2 << endl;
-       pid_id++;
+        cout << endl;
+        pid_t PID = pid[0];
+        cout << "[" << bg_count << "]+" << "   " << PID << endl;
+        bg_ing.push_back(PID);
+        int status;
+        waitpid(PID, &status, 0); 
+        bg_ing.erase(remove(bg_ing.begin(), bg_ing.end(), PID),
+                          bg_ing.end());
+        cout << "[" << bg_count << "]+" << "   " << PID << "  done         "
+             << cmd2 << endl;
+        if (bg_ing.empty()) {
+            bg_count = 1;  
+        } else {
+            bg_count++;  
+        }
     }
 }
 string lscolor(const string& cmd) {
