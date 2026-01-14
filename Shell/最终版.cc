@@ -182,6 +182,7 @@ void run_command(const vector<string>& cmds, bool bg, string cmd2) {
         pipe(pipefd[i]);
     }
     for (int i = 0; i < n; i++) {
+        fflush(stdout); 
         pid[i] = fork();
         if (pid[i] == 0) {
             string infile, outfile;
@@ -201,6 +202,9 @@ void run_command(const vector<string>& cmds, bool bg, string cmd2) {
             do_redirect(infile, outfile, append, err_out);
             if (execvp(argv[0], argv.data()) == -1) {
                 cout << RED << "未找到命令: " << argv[0] << RESET << endl;
+                for (char* arg : argv)
+                    if (arg)
+                        delete[] arg;
                 exit(1);
             }
         }
@@ -237,11 +241,9 @@ void sign(int sign) {
         for (auto& bg : bgs) {
             if (bg.pid == pid && bg.is_running) {
                 string STATUS = WIFEXITED(status) ? "Done" : "terminated";
-                cout << "\n[" << bg.id << "]  +" << "  " << STATUS << "   "
-                     << pid << "    " << bg.cmd << endl;
+                cout << "\n[" << bg.id << "]  +  " << STATUS << "   " << pid
+                     << "    " << bg.cmd << endl;
                 bg.is_running = false;
-                rl_on_new_line();
-                rl_redisplay();
                 break;
             }
         }
@@ -285,6 +287,12 @@ int main() {
         string cmd2 = lscolor(cmd);
         vector<string> pipe_cmds = split_str(cmd2, '|');
         run_command(pipe_cmds, bg_run, cmd2);
+        if (bg_run) {
+            bool bg_task_running = kill(bgs.back().pid, 0) == 0;
+            if (bg_task_running){
+                usleep(5000);
+            }
+        }
     }
     bgs.clear();
     return 0;
