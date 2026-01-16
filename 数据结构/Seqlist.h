@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-// #define N 10
+#define N 10
 // typedef int SLDataType;
 // typedef struct SeqList{
 //     SLDataType arr[N];
@@ -14,6 +14,7 @@ typedef struct SeqList {
     int size;         
     int capacity;     
 } SeqList;
+void SeqListCheckCapacity(SeqList* ps);
 void SeqListInit(SeqList* ps);
 void SeqListDestroy(SeqList* ps);
 void SeqListPrint(SeqList* ps);
